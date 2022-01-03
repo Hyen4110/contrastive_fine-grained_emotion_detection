@@ -26,6 +26,8 @@ which leads to improvement of performance in fine-grained depression emotions cl
 
 <img width="768" alt="model_architecture" src="https://user-images.githubusercontent.com/70733246/147923445-5a304481-c864-4660-bdc5-b7a959bf36ae.png">
 
+
+
 ##
 ### Objective functions
 - Triplet Loss <br>
@@ -35,6 +37,10 @@ which leads to improvement of performance in fine-grained depression emotions cl
 - Arcface Loss<br>
   <img width="400" alt="model_architecture" src="https://user-images.githubusercontent.com/70733246/147950151-2ee16c2c-c371-40d4-b8f4-f54ae8dd4c1e.png"><br>
   <img width="600" alt="model_architecture" src="https://user-images.githubusercontent.com/70733246/147950208-41138539-46ee-414f-9ae3-1a5c29ffd24d.png"><br>
+
+##
+### Pre-trained Model
+- KoBERT : https://github.com/SKTBrain/KoBERT
 
 ##
 ### Visualization (t-SNE)
