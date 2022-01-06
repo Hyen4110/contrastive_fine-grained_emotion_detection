@@ -81,7 +81,7 @@ def initiate(config, train_loader, valid_loader, test_loader):
 #
 ####################################################################
 
-def train_model(settings, config, train_loader, valid_loader, test_loader, scaler):
+def train_model(settings, config, train_loader, valid_loader, test_loader):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
     model = settings['model']
