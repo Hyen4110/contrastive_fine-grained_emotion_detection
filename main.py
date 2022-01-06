@@ -21,7 +21,6 @@ def define_argparser():
 
     parser.add_argument('--embedding_size', type=int, default = 128)  
     parser.add_argument('--hidden_size', type=int, default = 128)
-
         
     ## training details
     parser.add_argument('--num_epochs', type=int, default = 20)
@@ -55,22 +54,24 @@ def define_argparser():
                         help='added words before the text file name(ids)')
     
     config = parser.parse_args()
+
     return config
 
 def print_config(config):
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(vars(config))
 
-
-# set random seed
-torch.manual_seed(config.seed) # for CPU
-torch.cuda.manual_seed(config.seed) # for CUDA
-random.seed(config.seed) 
-torch.set_default_tensor_type('torch.FloatTensor')
+def set_random_seed(config):
+    # set random seed
+    torch.manual_seed(config.seed) # for CPU
+    torch.cuda.manual_seed(config.seed) # for CUDA
+    random.seed(config.seed) 
+    torch.set_default_tensor_type('torch.FloatTensor')
 
 
 if __name__ == '__main__':
     config = define_argparser() 
+    set_random_seed(config)
     print_config(config)
 
     train_loader, valid_loader, test_loader = get_loaders(config)

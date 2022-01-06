@@ -140,4 +140,5 @@ def get_loaders(config):
                                 
     config.n_train, config.n_valid, config.n_test =len(train_loader.dataset), len(valid_loader.dataset), len(test_loader.dataset)
     print(f" [data counts] train_loader: {len(train_loader.dataset)}, valid_loader : {len(valid_loader.dataset)}, test_loader : {len(test_loader.dataset)}")
+    
     return train_loader, valid_loader, test_loader

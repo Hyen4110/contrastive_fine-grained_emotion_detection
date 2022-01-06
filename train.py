@@ -257,7 +257,7 @@ def train_model(settings, config, train_loader, valid_loader, test_loader, scale
 #                Let's Start training / validating / testing
 #################################################################################
 
-    if config.version ==2 :
+    if config.version == 2 :
         for epoch in range(1, config.num_epochs+1):
             train(epoch, model, optimizer, criterion, scaler) # trian
             valid(epoch, model, criterion, test=False) # valid
@@ -281,4 +281,3 @@ def train_model(settings, config, train_loader, valid_loader, test_loader, scale
             
             #save model
             save_model(config, epoch, model) # Model Save
-    
