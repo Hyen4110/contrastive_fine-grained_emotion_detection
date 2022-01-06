@@ -32,36 +32,39 @@ def get_model(config):
     
 def get_crit(config):
     if config.version == 2: 
-        crit = nn.CrossEntropyLoss()
+        crit_ce = nn.CrossEntropyLoss()
         crits = {'crit_ce': crit_ce}
     else: 
         # set distance 
-        if dist_metric == 'cos':
+        if config.dist_metric == 'cos':
             dist_ = distances.CosineSimilarity()
         else:
-            dist_ = distances.LpDistance(power=2)
+            dist_ = distances.LpDistance(power = 2)
 
         crit_ce = nn.CrossEntropyLoss()
         crit_trplt = losses.TripletMarginLoss(margin = config.m_trplt, distance = dist_)  
-        crit_arcf = losses.ArcFaceLoss(num_classes=6, 
+        crit_arcf = losses.ArcFaceLoss(num_classes = 6, 
                                         embedding_size = config.embedding_size, 
                                         margin = config.m_arcf, 
-                                        scale=8)
+                                        scale = 8)
 
         crits = {'crit_ce': crit_ce,
                 'crit_trplt': crit_trplt,
                 'crit_arcf':crit_arcf}
+
     return crits
 
-def get_optimizer(config):
+def get_optimizer(config, model):
     scaler = torch.cuda.amp.GradScaler()
     optimizer = custom_optim.RAdam(model.parameters(), lr=config.learning_rate)
+    
     return optimizer, scaler
 
 def initiate(config, train_loader, valid_loader, test_loader):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    optimizer, scaler = get_optimizer(config).to(device)
+
     model = get_model(config).to(device)
+    optimizer, scaler = get_optimizer(config, model).to(device)
     criterion = get_crit(config).to(device)
 
     settings = {'model': model,
@@ -108,7 +111,7 @@ def train_model(settings, config, train_loader, valid_loader, test_loader, scale
                     optimizer.zero_grad()            
                     with torch.cuda.amp.autocast():
                         _, preds = model(token_ids, attention_mask, token_type_ids)
-                        loss = crits['crit_ce'](preds, label)
+                        loss = criterion['crit_ce'](preds, label)
                     
                     scaler.scale(loss).backward()
                     torch.nn.utils.clip_grad_norm_(model.parameters(), config.clip)
@@ -147,9 +150,9 @@ def train_model(settings, config, train_loader, valid_loader, test_loader, scale
                         embeddings, preds  = model(token_ids, attention_mask, token_type_ids)                        
                         indices_tuple = get_indices_tuple(config, label)
                     
-                        loss_ce_ = crits['crit_ce'](preds, label) if config.r_ce != 0 else 0
-                        loss_trplt_ = crits['crit_trplt'](embeddings, label, indices_tuple) if config.r_trplt != 0 else 0
-                        loss_arcf_ = crits['crit_arcf'](embeddings, label, indices_tuple) if config.r_arcf != 0 else 0
+                        loss_ce_ = criterion['crit_ce'](preds, label) if config.r_ce != 0 else 0
+                        loss_trplt_ = criterion['crit_trplt'](embeddings, label, indices_tuple) if config.r_trplt != 0 else 0
+                        loss_arcf_ = criterion['crit_arcf'](embeddings, label, indices_tuple) if config.r_arcf != 0 else 0
                                 
                         loss =  loss_ce_*config.r_ce + \
                                 loss_trplt_*config.r_trplt + \
@@ -165,7 +168,7 @@ def train_model(settings, config, train_loader, valid_loader, test_loader, scale
                     train_loss += loss 
                     loss_ce += loss_ce_ 
                     loss_trplt += loss_trplt_
-                    loss_arcf += loss_contra_
+                    loss_arcf += loss_arcf_
                     num_indices += len(indices_tuple[0])
                     ## 2) output
                     total_embeddings = np.vstack([total_embeddings, embeddings.float().detach().cpu().numpy()])
@@ -179,7 +182,7 @@ def train_model(settings, config, train_loader, valid_loader, test_loader, scale
                     accuracy = {accuracy:.4f}, f1_score = {f1_score:.4f},\
                     loss_ce : {loss_ce / num_batches:.4f}, \
                     loss_trplt : {loss_trplt/num_batches:.4f}, \
-                    loss_arcface : {loss_contra /num_batches:.4f}, \
+                    loss_arcface : {loss_arcf /num_batches:.4f}, \
                     num_indices_tuple : {num_indices // num_batches}')
             
             return total_embeddings, total_label
@@ -207,7 +210,7 @@ def train_model(settings, config, train_loader, valid_loader, test_loader, scale
                         
                         with torch.cuda.amp.autocast():
                             embeddings, preds = model(token_ids, attention_mask, token_type_ids)
-                            loss = crits['crit_ce'](preds, label)
+                            loss = criterion['crit_ce'](preds, label)
 
                         valid_loss += loss
                         
@@ -239,7 +242,7 @@ def train_model(settings, config, train_loader, valid_loader, test_loader, scale
                         
                         with torch.cuda.amp.autocast():
                             embeddings, preds = model(token_ids, attention_mask, token_type_ids)
-                            loss = crits['crit_ce'](preds, label)
+                            loss = criterion['crit_ce'](preds, label)
 
                         valid_loss += loss
                         
